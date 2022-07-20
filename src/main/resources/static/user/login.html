@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录⼊⼝</title>
+    <!-- 引⼊css-->
+    <link href="../plugins/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <!-- css-->
+    <style>
+        /*id选择器*/
+        #login_div{
+            /*border: 1px solid #999;*/
+            padding: 50px;
+            /*边框的圆⻆*/
+            border-radius: 20px;
+            /*外边距*/
+            margin-top: 60px;
+            /*设置边框的阴影部分*/
+            box-shadow: 2px -2px 4px rgba(153, 153, 153, 0.99);
+        }
+    </style>
+</head>
+<body>
+
+<!-- 导航部分 begin -->
+<div class="container-fluid">
+    <!-- 定义⼀⾏ -->
+    <div class="row">
+        <nav class="navbar navbar-inverse" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" datatoggle="collapse" data-target="#example-navbar-collapse">
+                        <span class="sr-only">切换导航</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">核酸检测信息系统</a>
+                </div>
+                <div class="collapse navbar-collapse" id="example-navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="#">登录</a></li>
+                        <li><a href="#">注册</a></li>
+                        <li><a href="#">安全退出</a></li>
+                        <li><a href="#">⾸⻚</a></li>
+                        <li><a href="#">阴性</a></li>
+                        <li><a href="#">阳性</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+<!-- 导航部分 end -->
+<!-- 登录部分begin-->
+<div class="container" id="login_div">
+    <div class="row">
+        <form class="form-horizontal" role="form">
+            <fieldset>
+                <legend><h3>管理员登录⼊⼝</h3></legend>
+                <div class="form-group">
+                    <label for="email" class="col-sm-2 control-label"  >请你输⼊邮箱</label>
+                    <div class="col-md-8">
+                        <input type="email" class="form-control" id="email" placeholder="请输⼊邮箱">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-success" onclick="send_mail()">发送验证码</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="code" class="col-sm-2 control-label">请输⼊验证码</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="code" placeholder="请输⼊验证码">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox">请记住我
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="button" class="btn btn-default" onclick="login()">登录</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- 登录部分end-->
+<!-- 必须要引⼊jquery.min.js - bootstrap是依赖于jquery-->
+<script src="../plugins/jquery-3.4.1.min.js"></script>
+<script src="../plugins/bootstrap/js/bootstrap.min.js"></script>
+
+<script>
+    //发送验证码
+    function send_mail(){
+        //1. 使⽤js来获取⽂本框输⼊的值
+        // let email = document.getElementById("email").value;
+        //2. jquery是js的框架
+        let email = $("#email").val();
+        //3. 将这个数据通过ajax技术直接发送到后端
+        //1. 第⼀个参数 - 后端对应的映射路径
+        //2. 第⼆个参数 - 发送到后端的参数=>直接使⽤⼀个json对象的格式
+        // {key1:value1}或者{key1:value1,key2:value2}
+        // 上⾯的key是可以进⾏任意命名的
+        //3. 第三个参数result=>后端返回出来的json字符串=>json对象
+        $.get('/dev/user/sendCode',{email:email},function(result){
+            console.log(result);
+            if(result.code=="404"){
+                alert(result.msg);
+            }else if(result.code=="200"){
+                alert(result.msg);
+            }
+        });
+    }
+
+    //登录按钮
+    function login(){
+        //1. 邮箱输⼊框的值
+        let email = $("#email").val();
+        //2. 验证码
+        let code = $("#code").val();
+        //post请求
+        $.post('/dev/user/login',{email:email,code:code},function(result){
+            if(result.code=="200"){
+                alert(result.msg);
+
+                //将该用户名进行一个本地存储 - 客户端
+                //key-value的形式
+                localStorage.setItem("username",result.data);
+                window.location="/dev/nucleic/index.html";
+            }else if(result.code=="404"){
+                alert(result.msg);
+            }else if(result.code=="500"){
+                alert(result.msg);
+            }else{
+                alert(result.msg);
+            }
+        })
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>城建核酸采集首页</title>
+    <link href="../plugins/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!--    导航部分 begin   -->
+<div class="container-fluid">
+    <!--        定义一行 -->
+    <div class="row">
+        <nav class="navbar navbar-inverse" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse"
+                            data-target="#example-navbar-collapse">
+                        <span class="sr-only">切换导航</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">核酸检测信息系统</a>
+                </div>
+                <div class="collapse navbar-collapse" id="example-navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href="#" data-toggle="modal" data-target="#myModal">录入信息</a></li>
+                        <li><a href="#">登录</a></li>
+                        <li><a href="#">注册</a></li>
+                        <li><a href="#">安全退出</a></li>
+                        <li class="active"><a href="#">首页</a></li>
+                        <li><a href="javascript:search_info(0)">阴性</a></li>
+                        <li><a href="javascript:search_info(1)">阳性</a></li>
+                        <li><a href="#" id="user_a"></a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+<!--    导航部分 end   -->
+
+<!--    录入信息 - begin-->
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">录入信息</h4>
+            </div>
+            <div class="modal-body">
+                <!--表单 添加了一个id属性值
+                如果add_info函数中需要使用到表单序列化的动作
+                需要给每个表单添加一个name属性的值
+                -->
+                <form class="form-horizontal" role="form" id="add_login">
+                    <div class="form-group">
+                        <label for="username" class="col-sm-2 control-label">输入姓名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="username" id="username" placeholder="请输入username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="status" class="col-sm-2 control-label">采样结果</label>
+                        <div class="col-sm-10">
+                            <select id="status" class="form-control" name="status">
+                                <option value="0">阴性</option>
+                                <option value="1">阳性</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="remark" class="col-sm-2 control-label">备注</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="remark" name="remark" placeholder="请输入备注">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-info" onclick="add_info()">录入</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<!--    录入信息 - end-->
+
+<!--    搜索框 - begin-->
+<div>
+    <div class="row">
+        <div class="col-md-5">
+            <div>
+                <form class="bs-example bs-example-form" role="form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="search_input">
+                                <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" onclick="find_status()">搜索!</button>
+                                    </span>
+                            </div><!-- /input-group -->
+                        </div><!-- /.col-lg-6 -->
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger" onclick="delMore()">批量删除</button>
+                        </div>
+                    </div><!-- /.row -->
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="table-responsive">
+            <table class="table">
+                <caption>核心信息采集</caption>
+                <thead>
+                <tr>
+                    <th><input type="checkbox"></th>
+                    <th>序号</th>
+                    <th>姓名</th>
+                    <th>采样结果</th>
+                    <th>备注</th>
+                    <th>采样时间</th>
+                    <th>操作选项</th>
+                </tr>
+                </thead>
+                <tbody id="app">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!--    分页标签-->
+<div class="container">
+    <ul class="pager">
+        <li class="previous"><a id="pre">&larr; Older</a></li>
+        <li class="next"><a id="next">Newer &rarr;</a></li>
+    </ul>
+</div>
+
+
+<!--    必须要引入jquery.min.js - bootstrap是依赖于jquery-->
+<script src="../plugins/jquery-3.4.1.min.js"></script>
+<script src="../plugins/bootstrap/js/bootstrap.min.js"></script>
+
+<script>
+    //录入信息
+    function add_info(){
+        //表单序列化的动作
+        let data = $("#add_login").serialize();
+        //表单控件的name属性值作为key,表单中输入的值作为value
+        //表单序列化的结果就是key-value的形式
+        //console.log(data);//username=admin&status=1&remark=%E7%BB%BF%E8%89%B2
+        $.post("/dev/nucleic/add",data,function(result){
+            if(result.code="404"){
+                alert(result.msg);
+            }
+        })
+    }
+
+
+    //jquery-块
+    //1. 允许出现多次
+    //2. js代码执行时机 - 必须等整个网页中的dom元素[标签]全部加载完毕之后才会执行.
+    $(function(){
+        //1. 获取本地存储中登录的数据 - 根据key去获取
+        let username = localStorage.getItem("username");
+        //2. 判断是否登录过,如果没有登录username是为null
+        let a = document.getElementById("user_a");
+        if(username!=null){
+            //获取a标签对象
+            //js写法
+            //将username设置到a标签体中.
+            a.innerText = username;
+        }else{
+            a.innerText = "尚未登录";
+            //修改a标签的属性
+            a.href="/dev/user/login.html";
+        }
+    });
+
+
+    //页面一旦加载完毕之后 - 需要将db表中的数据展示到tbody中去.
+    $(function(){
+        $.get("/dev/nucleic/index",function(result){
+            //console.log(result.data);
+            //获取真实的数据
+            //let arr = result.data;
+            //数组中有几个元素,需要在tbody中拼接几个tr标签
+            arr_tbody(result.data.content);
+
+            //分页的处理
+
+            //1. 获取当前页
+            console.log(result.data);//后端返回出来的page对象
+            //初始值0代表的是第一页
+            let currPage = result.data.pageable.pageNumber+1;
+
+            //2. 将当前页填充到下一页的a标签中.
+            //<a href="javascript:next_page(2)"></a>
+            $("#next").attr("href","javascript:next_page("+currPage+")");
+
+            //3. 将当前页填充到上一页的a标签中
+            $("#pre").attr("href","javascript:pre_page("+currPage+")");
+        });
+    });
+
+    //定义一个上一页的函数
+    function pre_page(currPage){
+        if(currPage<=1){
+            currPage=2;
+        }
+
+        $.get("/dev/nucleic/index",{pageNum:currPage-1},function(result){
+            $("#pre").attr("href","javascript:pre_page("+(currPage-1)+")");
+            $("#next").attr("href","javascript:next_page("+(currPage-1)+")");
+            arr_tbody(result.data.content);
+        })
+    }
+
+    //定义一个下一页的函数
+    function next_page(currPage){
+        //如果增加了条件搜索框 - 逻辑 - 下一页 - 应该是搜索框,搜索出来的结果
+        let value = $("#search_input").val();
+        let data={pageNum:currPage+1};
+
+        if(value=="阴性"){
+            data = {pageNum:currPage+1,status:0};
+        }else if(value=="阳性"){
+            data = {pageNum:currPage+1,status:1};
+        }
+
+        //console.log(data);
+
+        $.get("/dev/nucleic/index",data,function(result){
+            //console.log("data:"+)
+
+            //判断是否到达下一页的边界值 - 肯定要找出总的页数
+            let totalPages = result.data.totalPages;
+            //console.log("total:"+totalPages+":"+currPage)
+
+            if(currPage>=totalPages){
+                $("#next").attr("href","javascript:next_page("+currPage+")");
+                $("#pre").attr("href","javascript:pre_page("+currPage+")");
+                alert("已经到达末尾了!");
+            }else{
+                //重设a标签的href属性=>对应的页
+                $("#pre").attr("href","javascript:pre_page("+(currPage+1)+")");
+                $("#next").attr("href","javascript:next_page("+(currPage+1)+")");
+                arr_tbody(result.data.content);
+            }
+        })
+    }
+
+    //对冗余的代码进行封装 - 将数组中的数据 -填充到tbody的过程
+    function arr_tbody(arr){
+        let str;
+        let tbody = $("#app");
+        //清空tbody
+        tbody.html("");
+        //遍历该数组
+        for(let i=0;i<arr.length;i++){
+            console.log(arr[i]);
+            //模板字符串
+            str=`
+                        <tr>
+                            <td><input type="checkbox" name="cks" value="${arr[i].id}"></td>
+                            <td>${i+1}</td>
+                            <td>${arr[i].userName}</td>
+                            <td>${arr[i].status==0?"阴性":"阳性"}</td>
+                            <td>${arr[i].remark}</td>
+                            <td>${arr[i].createDate}</td>
+
+                            <td><a onclick="del(this,${arr[i].id})">删除</a></td>
+                        </tr>
+                    `
+            //获取tbody对象
+            tbody.append(str);
+        }
+    }
+
+    //根据id进行一个异步删除
+    function del(obj,id){//期望的obj代表a标签本身这个对象
+        //obj本质上就是上面传递过来的this - 当前对象 - 事件作用的那个对象 => js对象
+        //js对象
+
+        //涉及到dom的删除的操作 => jquery的方法
+        //a标签所在tr - 执行删除
+        //链式编程
+
+        //删除 - 确认框
+        if(confirm("确定删除吗?")){
+            $.post("/dev/nucleic/del",{id:id},function(result){
+                if(result.code=="200"){
+                    //代表后端是成功删除了
+                    $(obj).parent().parent().remove();
+                }else{
+                    alert(result.msg);
+                }
+            })
+        }
+    }
+
+    //阴性和阳性 - 超链接触发的单击事件
+    function search_info(status){
+        //alert(status);
+        //通过ajax请求后端,并且需要将status传入到后台
+        $.get("/dev/nucleic/index",{status:status},function(result){
+
+            arr_tbody(result.data.content);
+
+            // let tbody = $("#app");
+            // //清空tbody
+            // tbody.html("");
+            //
+            // let arr = result.data;
+            // //数组中有几个元素,需要在tbody中拼接几个tr标签
+            // let str;
+            //
+            // //遍历该数组
+            // for(let i=0;i<arr.length;i++){
+            //     console.log(arr[i]);
+            //     //模板字符串
+            //     str=`
+            //         <tr>
+            //             <td><input type="checkbox"></td>
+            //             <td>${i+1}</td>
+            //             <td>${arr[i].username}</td>
+            //             <td>${arr[i].status==0?"阴性":"阳性"}</td>
+            //             <td>${arr[i].remark}</td>
+            //             <td>${arr[i].createDate}</td>
+            //             <td><a href="#">删除</a></td>
+            //         </tr>
+            //     `
+            //     //获取tbody对象
+            //     tbody.append(str);
+            // }
+        });
+    }
+
+    //批量删除
+    function delMore() {
+        //checkbox - name = cks
+        //js获取dom元素=>id获取=>单一的对象
+        //js获取dom元素=>name属性值=>允许重复的=>数组
+        let cks_arr = document.getElementsByName("cks");
+        //遍历这个数组
+        if(null!=cks_arr && cks_arr.length>0){
+            //定义一个计数器
+            let count = 0;
+
+            //定义一个字符串,用来拼接勾选的ck的value  => id
+            let sids="";
+
+            for (let i=0;i<cks_arr.length;i++){
+                //判断当前的ck是否被勾选了.
+                if(cks_arr[i].checked){
+                    sids+=cks_arr[i].value+":";
+                    count++;
+                }
+            }
+
+            //假如count仍然为0=>没有任何一个ck被选中
+            if(count==0){
+                alert("sorry,请你先勾选!");
+                return;//用来结束整个函数
+            }
+
+            //说明勾选了
+            //为了去除最后一个:
+            sids = sids.substring(0,sids.length-1);
+            //发送到后端
+            $.post("/demo/user/delMore",{sids:sids},function(result){
+                if(result.code=="1"){
+                    for (let i=cks_arr.length-1;i>=0;i--){
+                        //判断当前的ck是否被勾选了.
+                        if(cks_arr[i].checked){
+                            //0       1    2
+                            //admin james ooo
+                            //james ooo
+                            //但是james漏删了.
+
+                            //ck所在的行删除...
+                            $(cks_arr[i]).parent().parent().remove();
+                        }
+                    }
+
+                }
+            })
+        }
+    }
+
+    //搜索框
+    function find_status(){
+        //1. 获取文本输入框中的数据
+        let value = $("#search_input").val();
+        value = (value=="阴性"?0:1);
+        //将该数据发送到后端了
+        $.get("/dev/nucleic/index",{status:value},function(result){
+            //400 - 请求是失败的.
+            //文本框拿到的是汉字阴性和阳性
+            arr_tbody(result.data.content);
+
+            $("#next").attr("href","javascript:next_page(1)");
+
+            //3. 将当前页填充到上一页的a标签中
+            $("#pre").attr("href","javascript:pre_page(1)");
+        });
+
+    }
+
+</script>
+</body>
+</html>
